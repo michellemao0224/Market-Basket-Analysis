@@ -66,10 +66,8 @@ df['InvoiceNo'] = df['InvoiceNo'].astype('str')
 df = df[~df['InvoiceNo'].str.contains('C')]
 
 df['Description'] = df['Description'].astype('str')
-# Remove empty space in Description
-# df['Description'] = df['Description'].str.strip()
 # Search for particular item
-df = df[df['Description'].str.contains('TEA')]
+df = df[df['Description'].str.contains('LUNCH BOX')]
 
 # Prepare for market basket
 # basket for the whole sales
@@ -90,7 +88,6 @@ def encode_units(x):
         return 1
 
 basket_sets = basket.applymap(encode_units)
-# basket_sets.drop('POSTAGE', inplace=True, axis=1)
 
 # Frequent Items
 # Need to adjust minimum support to find the best result
@@ -99,14 +96,11 @@ frequent_itemsets = apriori(basket_sets, min_support=0.05, use_colnames=True)
 rules = association_rules(frequent_itemsets, metric="lift", min_threshold=1)
 print(rules.head())
 
-# rules['particular_item'] = rules['antecedants'].apply(lambda x: 'CLOCK' if 'CLOCK' in x else x)
-# rules['particular_item'] = rules['antecedants'].str.contains('CLOCK')
-
 # Association Rules
 # If we are ony interested in rules that satisfy the following criteria:
 #
 #   1.  at least 2 antecedants
-#   2.  a confidence > 0.8
+#   2.  a confidence > 0.7
 #   3.  a lift score > 6
 
 rules['antecedant_len'] = rules['antecedants'].apply(lambda x: len(x))
@@ -120,16 +114,8 @@ rules
 result = rules[ (rules['confidence'] > 0.7) &
                 (rules['lift'] > 1)]
 
-# result = rules[ ((rules['antecedants'].str.contains('ALARM CLOCK BAKELIKE')) | (rules['consequents'].str.contains('ALARM CLOCK BAKELIKE'))) &
-#                 (rules['confidence'] > 0.7) &
-#                 (rules['lift'] > 6)]
-
 # Write MBA Report
 my_df = pd.DataFrame(result)
-# particular_item = my_df.loc[my_df['antecedants'] == 'ALARM CLOCK BAKELIKE']
-# particular_item = my_df.query('antecedants == "ALARM CLOCK BAKELIKE"')
-# print(particular_item)
-
 my_df.to_csv('report_v2.csv', index=False, header=True)
 print(my_df)
 
